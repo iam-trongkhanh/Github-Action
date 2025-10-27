@@ -4,8 +4,17 @@ import path from "path";
 
 const dataFilePath = path.join(process.cwd(), "data", "todos.json");
 
+interface Todo {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Helper function to read todos from JSON file
-function readTodos() {
+function readTodos(): Todo[] {
   try {
     const data = fs.readFileSync(dataFilePath, "utf8");
     return JSON.parse(data);
@@ -16,7 +25,7 @@ function readTodos() {
 }
 
 // Helper function to write todos to JSON file
-function writeTodos(todos: any[]) {
+function writeTodos(todos: Todo[]) {
   try {
     fs.writeFileSync(dataFilePath, JSON.stringify(todos, null, 2));
   } catch (error) {
