@@ -63,11 +63,21 @@ jobs:
       - name: Build application
         run: npm run build
 
+      - name: List build files
+        run: |
+          echo "Build completed. Listing files:"
+          ls -la
+          echo "Next.js build directory:"
+          ls -la .next/ || echo "No .next directory found"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files
-          path: .next/
+          path: |
+            .next/
+            package.json
+            package-lock.json
 
   deploy:
     needs: build
@@ -78,11 +88,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-files
-          path: .next/
+          path: ./
+        continue-on-error: true
+
+      - name: Build if artifact not found
+        if: steps.download-artifact.outcome == 'failure'
+        run: npm run build
+
+      - name: Verify build files
+        run: |
+          echo "Checking build files:"
+          ls -la
+          ls -la .next/ || echo "No .next directory"
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
